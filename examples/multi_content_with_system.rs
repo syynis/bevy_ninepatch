@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 
-use bevy_ninepatch::{
-    NinePatchBuilder, NinePatchBundle, NinePatchContent, NinePatchData, NinePatchPlugin,
-};
+use bevy_ninepatch::{NinePatchBuilder, NinePatchContent, NinePatchData, NinePatchPlugin};
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     App::default()
@@ -33,22 +31,24 @@ fn setup(
     commands.spawn(
         // this component bundle will be detected by the plugin, and the 9-Patch UI element will be added as a child
         // of this entity
-        NinePatchBundle {
-            style: Style {
-                margin: UiRect::all(Val::Auto),
-                justify_content: JustifyContent::Center,
-                align_items: AlignItems::Center,
-                width: Val::Px(500.),
-                height: Val::Px(300.),
-                ..Default::default()
+        (
+            NodeBundle {
+                style: Style {
+                    margin: UiRect::all(Val::Auto),
+                    justify_content: JustifyContent::Center,
+                    align_items: AlignItems::Center,
+                    width: Val::Px(800.),
+                    height: Val::Px(300.),
+                    ..Default::default()
+                },
+                ..default()
             },
-            nine_patch_data: NinePatchData {
+            NinePatchData {
                 nine_patch: panel_nine_patch_handle,
                 texture: panel_texture_handle,
-                ..Default::default()
+                ..default()
             },
-            ..Default::default()
-        },
+        ),
     );
 
     commands.spawn(Camera2dBundle::default());
@@ -71,10 +71,10 @@ fn set_content(
                     );
 
                     let content_entity = commands
-                        .spawn(
+                        .spawn((
                             // this component bundle will be detected by the plugin, and the 9-Patch UI element will be added as a child
                             // of this entity
-                            NinePatchBundle {
+                            NodeBundle {
                                 style: Style {
                                     margin: UiRect {
                                         left: Val::Auto,
@@ -86,16 +86,16 @@ fn set_content(
                                     align_items: AlignItems::Center,
                                     width: Val::Px(200.),
                                     height: Val::Px(100.),
-                                    ..Default::default()
+                                    ..default()
                                 },
-                                nine_patch_data: NinePatchData {
-                                    nine_patch: button_nine_patch_handle,
-                                    texture: button_texture_handle,
-                                    ..Default::default()
-                                },
-                                ..Default::default()
+                                ..default()
                             },
-                        )
+                            NinePatchData {
+                                nine_patch: button_nine_patch_handle,
+                                texture: button_texture_handle,
+                                ..default()
+                            },
+                        ))
                         .id();
                     commands.entity(entity).push_children(&[content_entity]);
                     nine_patch_content.loaded = true;

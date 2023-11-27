@@ -267,24 +267,26 @@ impl<T: Clone + Send + Sync + Eq + std::hash::Hash + 'static> NinePatch<T> {
             },
             background_color: BackgroundColor(Color::NONE),
             focus_policy: FocusPolicy::Pass,
-            ..Default::default()
+            ..default()
         });
         let mut rows = vec![];
         let mut n = 0;
         for row in self.patches.iter() {
-            let (size_height, growth) = row
-                .get(0)
-                .map(|p| match p.target_height {
-                    Val::Px(0.) => (
-                        Val::Px(to_height(p.original_size, self.texture_size) as f32),
-                        0.,
-                    ),
-                    Val::Px(i) => (Val::Px(i), 0.),
-                    Val::Auto => (Val::Auto, 1.),
-                    Val::Percent(x) => (Val::Auto, x / 100.),
-                    other => (other, 1.),
-                })
-                .unwrap_or((Val::Px(0.), 0.));
+            let (size_height, growth) =
+                row.first()
+                    .map_or((Val::ZERO, 0.), |p| match p.target_height {
+                        Val::Px(i) => {
+                            let height = if i == 0. {
+                                Val::Px(to_height(p.original_size, self.texture_size) as f32)
+                            } else {
+                                Val::Px(i)
+                            };
+                            (height, 0.)
+                        }
+                        Val::Auto => (Val::Auto, 1.),
+                        Val::Percent(x) => (Val::Auto, x / 100.),
+                        other => (other, 0.),
+                    });
 
             let id = commands
                 .spawn(NodeBundle {
@@ -295,30 +297,40 @@ impl<T: Clone + Send + Sync + Eq + std::hash::Hash + 'static> NinePatch<T> {
                         align_content: AlignContent::Stretch,
                         flex_grow: growth,
                         flex_shrink: growth,
-                        margin: UiRect::all(Val::Px(0.)),
-                        ..Default::default()
+                        ..default()
                     },
                     background_color: BackgroundColor(Color::NONE),
                     focus_policy: FocusPolicy::Pass,
-                    ..Default::default()
+                    ..default()
                 })
                 .id();
             rows.push(id);
             commands.entity(id).with_children(|row_parent| {
                 for column_item in row.iter() {
                     let (size_width, growth) = match column_item.target_width {
-                        Val::Px(0.) => (
-                            Val::Px(to_width(column_item.original_size, self.texture_size) as f32),
-                            0.,
-                        ),
-                        Val::Px(i) => (Val::Px(i), 0.),
+                        Val::Px(i) => {
+                            let width = if i == 0. {
+                                Val::Px(
+                                    to_width(column_item.original_size, self.texture_size) as f32
+                                )
+                            } else {
+                                Val::Px(i)
+                            };
+                            (width, 0.)
+                        }
                         Val::Auto => (Val::Auto, 1.),
                         Val::Percent(x) => (Val::Auto, x / 100.),
-                        other => (other, 0.),
+                        _ => todo!(),
                     };
                     let size_height = match column_item.target_height {
-                        Val::Px(0.) => {
-                            Val::Px(to_height(column_item.original_size, self.texture_size) as f32)
+                        Val::Px(i) => {
+                            if i == 0. {
+                                Val::Px(
+                                    to_height(column_item.original_size, self.texture_size) as f32
+                                )
+                            } else {
+                                Val::Px(i)
+                            }
                         }
                         Val::Percent(_) => Val::Auto,
                         other => other,
@@ -331,13 +343,12 @@ impl<T: Clone + Send + Sync + Eq + std::hash::Hash + 'static> NinePatch<T> {
                         style: Style {
                             width: size_width,
                             height: size_height,
-                            margin: UiRect::all(Val::Px(0.)),
                             flex_grow: growth,
                             flex_shrink: growth,
-                            ..Default::default()
+                            ..default()
                         },
                         focus_policy: FocusPolicy::Pass,
-                        ..Default::default()
+                        ..default()
                     });
                     if let Some(content_part) = column_item.content.as_ref() {
                         child.insert(NinePatchContent {

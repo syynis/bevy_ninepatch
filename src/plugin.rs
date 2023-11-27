@@ -48,35 +48,6 @@ impl<T: Clone + Send + Sync + Default + Eq + std::hash::Hash + TypePath + 'stati
     }
 }
 
-#[derive(Bundle)]
-/// Component Bundle to place the NinePatch
-pub struct NinePatchBundle<T: Clone + Send + Sync + Eq + std::hash::Hash + TypePath + 'static> {
-    /// Style of this UI node
-    pub style: Style,
-    /// State of the `NinePatch`
-    pub nine_patch_data: NinePatchData<T>,
-    /// UI node
-    pub node: Node,
-    /// Transform
-    pub transform: Transform,
-    /// Global transform - should be set automatically by bevy's systems
-    pub global_transform: GlobalTransform,
-}
-
-impl<T: Clone + Send + Sync + Eq + std::hash::Hash + TypePath + 'static> Default
-    for NinePatchBundle<T>
-{
-    fn default() -> Self {
-        NinePatchBundle {
-            style: Default::default(),
-            nine_patch_data: Default::default(),
-            node: Default::default(),
-            transform: Default::default(),
-            global_transform: Default::default(),
-        }
-    }
-}
-
 /// Plugin that will add the system and the resource for nine patch
 #[derive(Debug, Clone, Copy)]
 pub struct NinePatchPlugin<T: Clone + Send + Sync + 'static = ()> {
